@@ -1,0 +1,101 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+.npm
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+*.env
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+.docker/
+
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Build outputs
+dist/
+build/
+out/
+*.pid
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+
+# Secrets
+secrets/
+credentials/
+*.key
+*.pem
+*.cert
+*.crt
+.yandex-token
+.telegram-token
+.git-token
+
+# local test
+test-local.sh
+test-local/
+local-test/
+*.test.js
+*.test.ts
+
+# Coverage reports
+coverage/
+*.lcov
+.nyc_output/
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar

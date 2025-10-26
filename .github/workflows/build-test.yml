@@ -1,0 +1,57 @@
+name: Build and Test Cubes
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-cubes:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build Telegram Cube
+      run: |
+        echo "Building Telegram Cube (placeholder for teammate)..."
+        if [ -f "telegram-cube/Dockerfile" ]; then
+          docker build -t telegram-notifier:test ./telegram-cube
+        else
+          echo "Telegram cube not yet implemented"
+        fi
+    
+    - name: Build Yandex Messenger Cube
+      run: |
+        echo "Building Yandex Messenger Cube..."
+        docker build -t yandex-messenger:test ./yandex-messenger-cube
+    
+    - name: Build Git Mirror Cube
+      run: |
+        echo "Building Git Mirror Cube..."
+        docker build -t git-mirror:test ./git-mirror-cube
+    
+    - name: Test Yandex Messenger Cube
+      run: |
+        echo "Testing Yandex Messenger Cube..."
+        docker run --rm \
+          -e CHAT_ID=test-chat \
+          -e MESSAGE="GitHub Actions Test" \
+          yandex-messenger:test
+    
+    - name: Test Git Mirror Cube
+      run: |
+        echo "Testing Git Mirror Cube..."
+        docker run --rm \
+          -e SOURCE_REPO=https://github.com/octocat/Hello-World \
+          -e TARGET_REPO=https://github.com/test/mirror \
+          git-mirror:test
+    
+    - name: Summary
+      run: |
+        echo "----All cubes built and tested successfully----"
+        echo "Ready for deployment to Yandex Container Registry"

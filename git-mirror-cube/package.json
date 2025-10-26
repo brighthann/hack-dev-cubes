@@ -1,0 +1,12 @@
+{
+  "name": "git-mirror-cube",
+  "version": "1.0.0",
+  "description": "Git repository mirroring cube for SourceCraft CI/CD",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "simple-git": "^3.20.0"
+  }
+}

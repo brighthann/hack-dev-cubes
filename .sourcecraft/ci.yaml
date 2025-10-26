@@ -1,0 +1,75 @@
+
+on:
+  push:
+    - workflows: build-and-deploy-cubes
+
+tokens:
+  SERVICE_CONNECTION:
+    service_connection: default-service-connection
+    scope: org
+
+workflows:
+  build-and-deploy-cubes:
+    env:
+      YC_DOCKER_REGISTRY: cr.yandex/crp01isvlnd8ccg5lttf
+      TELEGRAM_CUBE_NAME: telegram-notifier
+      YANDEX_CUBE_NAME: yandex-messenger
+      GIT_CUBE_NAME: git-mirror
+    tasks:
+      - name: build-task
+        cubes:
+          - name: get-iam-token
+            env:
+              ID_TOKEN: ${{ tokens.SERVICE_CONNECTION.id_token }}
+              YC_SA_ID: ${{ tokens.SERVICE_CONNECTION.service_account_id }}
+            image: cr.yandex/sourcecraft/yc-iam:latest
+          
+          - name: build-and-push-cubes
+            env:
+              IAM_TOKEN: ${{ cubes.get-iam-token.outputs.IAM_TOKEN }}
+            image: cr.yandex/sourcecraft/docker-cube:latest
+            script:
+              - |
+                echo $IAM_TOKEN | docker login --username iam --password-stdin $YC_DOCKER_REGISTRY
+                
+                # Build all 3 cubes
+                docker build --tag $YC_DOCKER_REGISTRY/$TELEGRAM_CUBE_NAME:latest ./telegram-cube
+                docker build --tag $YC_DOCKER_REGISTRY/$YANDEX_CUBE_NAME:latest ./yandex-messenger-cube
+                docker build --tag $YC_DOCKER_REGISTRY/$GIT_CUBE_NAME:latest ./git-mirror-cube
+                
+                # Push all 3 cubes
+                docker push $YC_DOCKER_REGISTRY/$TELEGRAM_CUBE_NAME:latest
+                docker push $YC_DOCKER_REGISTRY/$YANDEX_CUBE_NAME:latest
+                docker push $YC_DOCKER_REGISTRY/$GIT_CUBE_NAME:latest
+                
+                echo "---All cubes built and pushed successfully!"
+
+  test-cubes:
+    env:
+      YC_DOCKER_REGISTRY: cr.yandex/crp01isvlnd8ccg5lttf
+    tasks:
+      - name: test-our-cubes
+        cubes:
+          - name: test-telegram-cube
+            env:
+              TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+              TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+              MESSAGE: "Test notification from SourceCraft CI/CD"
+              BUILD_STATUS: "success"
+            image: cr.yandex/crp01isvlnd8ccg5lttf/telegram-notifier:latest
+          
+          - name: test-yandex-cube
+            env:
+              YANDEX_TOKEN: ${{ secrets.YANDEX_TOKEN }}
+              CHAT_ID: ${{ secrets.YANDEX_CHAT_ID }}
+              MESSAGE: "Test from Yandex Messenger Cube"
+              BUILD_STATUS: "success"
+            image: cr.yandex/crp01isvlnd8ccg5lttf/yandex-messenger:latest
+          
+          - name: test-git-mirror-cube
+            env:
+              SOURCE_REPO: "https://github.com/sourcecraft-dev/template-repo"
+              TARGET_REPO: "https://github.com/your-org/mirror-test"
+              GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+              BRANCH: "main"
+            image: cr.yandex/crp01isvlnd8ccg5lttf/git-mirror:latest

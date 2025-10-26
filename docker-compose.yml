@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  #yandex messenger
+  yandex-messenger:
+    build: ./yandex-messenger-cube
+    environment:
+      - CHAT_ID=test-chat-123
+      - MESSAGE=Test notification from Docker Compose
+      - BUILD_STATUS=success
+      - YANDEX_TOKEN=test-token
+    command: node src/index.js
+
+  #git mirror
+  git-mirror:
+    build: ./git-mirror-cube
+    environment:
+      - SOURCE_REPO=https://github.com/octocat/Hello-World
+      - TARGET_REPO=https://github.com/test/mirror-repo
+      - BRANCH=main
+      - GIT_TOKEN=test-token
+    command: node src/index.js
+
+  #telegram
+  # telegram-notifier:
+  #   build: ./telegram-cube
+  #   environment:
+  #     - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+  #     - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+  #     - MESSAGE=Test from Docker Compose
+  #     - BUILD_STATUS=success

@@ -1,0 +1,82 @@
+# Example workflow
+#how to use cubes in a real pipeline
+
+on:
+  push:
+    - workflows: example-complete-pipeline
+
+tokens:
+  SERVICE_CONNECTION:
+    service_connection: default-service-connection
+    scope: org
+
+workflows:
+  example-complete-pipeline:
+    env:
+      YC_DOCKER_REGISTRY: cr.yandex/YOUR_REGISTRY_ID
+    tasks:
+      # Build and test
+      - name: build-application
+        cubes:
+          - name: build-app
+            image: cr.yandex/sourcecraft/docker-cube:latest
+            script:
+              - echo "Building application..."
+              - echo "Running tests..."
+              - echo "BUILD_STATUS=success" >> $SOURCECRAFT_OUTPUT
+      
+      # Mirror code to backup repository
+      - name: mirror-to-backup
+        cubes:
+          - name: mirror-code
+            env:
+              SOURCE_REPO: "https://github.com/your-org/main-repo"
+              TARGET_REPO: "https://github.com/your-org/backup-repo"
+              GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+              BRANCH: "main"
+            image: cr.yandex/YOUR_REGISTRY_ID/git-mirror:latest
+      
+      # Send notifications
+      - name: notify-teams
+        cubes:
+          # Telegram
+          - name: telegram-notification
+            env:
+              TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+              TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+              MESSAGE: "Build successful! Application deployed."
+              BUILD_STATUS: ${{ cubes.build-app.outputs.BUILD_STATUS }}
+            image: cr.yandex/YOUR_REGISTRY_ID/telegram-notifier:latest
+          
+          # Yandex Messenger
+          - name: yandex-notification
+            env:
+              YANDEX_TOKEN: ${{ secrets.YANDEX_TOKEN }}
+              CHAT_ID: ${{ secrets.YANDEX_CHAT_ID }}
+              MESSAGE: "Build successful! Check details in CI/CD."
+              BUILD_STATUS: ${{ cubes.build-app.outputs.BUILD_STATUS }}
+            image: cr.yandex/YOUR_REGISTRY_ID/yandex-messenger:latest
+
+  # Workflow failure
+  notify-on-failure:
+    on:
+      workflow_failed:
+        - example-complete-pipeline
+    tasks:
+      - name: failure-notifications
+        cubes:
+          - name: telegram-alert
+            env:
+              TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+              TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+              MESSAGE: "Build failed! Please check the CI/CD logs."
+              BUILD_STATUS: "failed"
+            image: cr.yandex/YOUR_REGISTRY_ID/telegram-notifier:latest
+          
+          - name: yandex-alert
+            env:
+              YANDEX_TOKEN: ${{ secrets.YANDEX_TOKEN }}
+              CHAT_ID: ${{ secrets.YANDEX_CHAT_ID }}
+              MESSAGE: "Pipeline failed. Immediate attention required!"
+              BUILD_STATUS: "failed"
+            image: cr.yandex/YOUR_REGISTRY_ID/yandex-messenger:latest
