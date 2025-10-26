@@ -33,7 +33,7 @@ workflows:
                 echo $IAM_TOKEN | docker login --username iam --password-stdin $YC_DOCKER_REGISTRY
                 
                 # Build all 3 cubes
-                docker build --tag $YC_DOCKER_REGISTRY/$TELEGRAM_CUBE_NAME:latest ./telegram-cube
+                docker build --tag $YC_DOCKER_REGISTRY/$TELEGRAM_CUBE_NAME:latest ./telegramCube
                 docker build --tag $YC_DOCKER_REGISTRY/$YANDEX_CUBE_NAME:latest ./yandex-messenger-cube
                 docker build --tag $YC_DOCKER_REGISTRY/$GIT_CUBE_NAME:latest ./git-mirror-cube
                 
@@ -50,7 +50,7 @@ workflows:
     tasks:
       - name: test-our-cubes
         cubes:
-          - name: test-telegram-cube
+          - name: test-telegramCube
             env:
               TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
               TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

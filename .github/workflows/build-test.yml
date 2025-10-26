@@ -19,8 +19,8 @@ jobs:
     - name: Build Telegram Cube
       run: |
         echo "Building Telegram Cube (placeholder for teammate)..."
-        if [ -f "telegram-cube/Dockerfile" ]; then
-          docker build -t telegram-notifier:test ./telegram-cube
+        if [ -f "telegramCube/Dockerfile" ]; then
+          docker build -t telegram-notifier:test ./telegramCube
         else
           echo "Telegram cube not yet implemented"
         fi
